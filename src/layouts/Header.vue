@@ -18,33 +18,12 @@
           </div>
           <nav id="navigation" class="style-1">
             <ul id="responsive">
-              <!-- <li>
-                <router-link to="/" class="current">
-                  Inicio
-                </router-link>
-
-                <ul>
-                  <li><a href="index.html">Home 1</a></li>
-                  <li><a href="index-2.html">Home 2</a></li>
-                  <li><a href="index-3.html">Home 3</a></li>
-                  <li><a href="index-4.html">Home 4</a></li>
-                </ul>
-              </li> -->
-             
-
               <li>
                 <router-link to="/ofertas">Promociones</router-link>
               </li>
-
               <li>
-                <router-link :to="{ name:'chefsingle', params: { id: 1 } }">Quiero ser Socio Chef!</router-link>
+                <router-link to="">Quiero ser Socio Chef!</router-link>
               </li>
-
-              <!-- <li>
-                <router-link to="/">
-                  Listening
-                </router-link>
-              </li> -->
             </ul>
           </nav>
           <div class="clearfix"></div>
@@ -54,17 +33,50 @@
         <!--Navigation Right-->
         <div class="right-side">
           <div class="header-widget">
-            <a href="#sign-in-dialog" class="sign-in popup-with-zoom-anim"><i class="sl sl-icon-login"></i> Ingresar</a>
-            <a href="#sign-in-dialog" class="button border with-icon  popup-with-zoom-anim">Registrarse <i class="sl sl-icon-plus"></i></a>
+            <!-- If authenticated -->
+            <template v-if="authenticated">
+              <div class="user-menu">
+                <div v-if="user" class="user-name"><span><img :src="user.imgUrl" alt=""></span>{{ user.username }}</div>
+                <ul>
+                  <li><a href="dashboard.html"><i class="sl sl-icon-settings"></i> Dashboard</a></li>
+                  <li><a href="dashboard-messages.html"><i class="sl sl-icon-envelope-open"></i> Messages</a></li>
+                  <li><a href="dashboard-bookings.html"><i class="fa fa-calendar-check-o"></i> Bookings</a></li>
+                  <li><a @click="logOut"><i class="sl sl-icon-power"></i> LogOut</a></li>
+                </ul>
+              </div>
+            </template>
+            <!-- If not authenticated -->
+            <template v-else>
+              <a href="#sign-in-dialog" class="sign-in popup-with-zoom-anim"><i class="sl sl-icon-login"></i> Autenticarse</a>
+            </template>
           </div>
         </div>
     		<!--End Navigation Right-->
-
       </div>
     </div>
   </div>
 </template>
 
 <script>
-export default {};
+  import { Store } from "@/store"
+  import { AUTH } from "@/firebase"
+  export default {
+    computed: {
+			authenticated() {
+				return Store.state.firebaseUser ? true : false
+      },
+      user() {
+        return Store.state.user ? Store.state.user : null
+      }
+    },
+    methods: {
+      logOut() {
+        AUTH.signOut()
+        .then(() => {
+          Store.state.firebaseUser = null
+          Store.state.user = null
+        })
+      }
+    }
+  }
 </script>
