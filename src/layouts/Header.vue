@@ -1,6 +1,6 @@
 <template>
-	<div id="header-container">
-    <div id="header">
+	<header id="header-container" class="fixed">
+    <div id="header" class="not-sticky">
       <div class="container">
         <!--Navigation Left-->
         <div class="left-side">
@@ -38,7 +38,7 @@
               <div class="user-menu">
                 <div v-if="user" class="user-name"><span><img :src="user.imgUrl" alt=""></span>{{ user.username }}</div>
                 <ul>
-                  <li><a href="dashboard.html"><i class="sl sl-icon-settings"></i> Dashboard</a></li>
+                  <li><router-link :to="{ name: 'profileInfo' }" exact><i class="sl sl-icon-user"></i> Perfil</router-link></li>
                   <li><a href="dashboard-messages.html"><i class="sl sl-icon-envelope-open"></i> Messages</a></li>
                   <li><a href="dashboard-bookings.html"><i class="fa fa-calendar-check-o"></i> Bookings</a></li>
                   <li><a @click="logOut"><i class="sl sl-icon-power"></i> LogOut</a></li>
@@ -54,7 +54,7 @@
     		<!--End Navigation Right-->
       </div>
     </div>
-  </div>
+  </header>
 </template>
 
 <script>
