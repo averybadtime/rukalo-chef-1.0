@@ -1,5 +1,3 @@
 <template>
-  <div class="row">
-    <h1>Mis órdenes</h1>
-  </div>
+  <router-view></router-view>
 </template>
