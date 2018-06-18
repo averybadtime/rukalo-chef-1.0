@@ -93,7 +93,6 @@
 		},
 		methods: {
 			usernameExists(username) {
-				console.log("entrando")
 				return new Promise(resolve => {
 					DB.ref("/registeredUsernames/" + username).once("value")
 					.then(snapshot => resolve(snapshot.exists()))
@@ -135,7 +134,6 @@
 				
 				this.usernameExists(username)
 				.then((exists) => {
-					console.log(exists)
 					if (exists) {
 						const message = "El nombre de usuario no se encuentra disponible."
 						console.error(message)
@@ -144,7 +142,7 @@
 						AUTH.createUserWithEmailAndPassword(this.r.email, this.r.password)
 						.then((resp) => {
 							const uid = resp.user.uid
-							DB.ref("/users/" + uid + "/info").update({
+							DB.ref("/users/users/" + uid + "/profileInfo").update({
 								username: username,
 								email: this.r.email
 							})

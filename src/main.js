@@ -23,9 +23,9 @@ function loadAuthUserInfo (uid) {
   return new Promise(resolve => {
     if (!uid) resolve()
 
-    const refs = ["/users/", "/chefs/", "/admins/"]
+    const refs = ["/users/users/", "/users/chefs/", "/users/admins/"]
     refs.forEach(ref => {
-      DB.ref(ref + uid).child("info").once("value", snapshot => {
+      DB.ref(ref + uid).child("profileInfo").once("value", snapshot => {
         if (snapshot.exists()) {
           Store.state.user = snapshot.val()
           resolve()
