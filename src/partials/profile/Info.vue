@@ -6,17 +6,20 @@
         <div class="dashboard-list-box-static">
           
           <!-- Avatar -->
-          <div class="edit-profile-photo">
-            <img :src="user.photoUrl || 'http://via.placeholder.com/500x500'" :alt="'Foto de perfil de' + user.name">
-            <div class="change-photo-btn">
-              <div class="photoUpload">
-                  <span><i class="fa fa-upload"></i> Upload Photo</span>
-                  <input type="file" class="upload" />
+          <!-- <form @submit.prevent="uploadNewUserProfilePicture"> -->
+            <div class="edit-profile-photo">
+              <img :src="user.photoUrl || 'http://via.placeholder.com/500x500'" :alt="'Foto de perfil de' + user.name">
+              <div class="change-photo-btn">
+                <div class="photoUpload">
+                  <span><i class="fa fa-upload"></i> Subir foto</span>
+                  <!-- <input type="file" class="upload" /> -->
+                  <file-uploader :reference="reference" :multiple="false"></file-uploader>
+                </div>
               </div>
             </div>
-            <button class="button margin-top-15">Guardar cambios</button>
-          </div>
-
+            <!-- <button class="button">Guardar foto</button>
+          </form> -->
+          <hr>
           <!-- Details -->
           <form @submit.prevent="saveUserProfile">
             <div class="my-profile">
@@ -70,13 +73,18 @@
 <script>
   import { DB } from "@/firebase"
   import { Store } from "@/store"
+  import FileUploader from "@/widgets/FileUploader.vue"
   export default {
+    components: {
+      FileUploader
+    },
     created() {
       this.setUserProfile()
     },
     data() {
       return {
-        userProfile: {}
+        userProfile: {},
+        reference: "/users/users/" + Store.state.firebaseUser.uid + "/profileInfo/photoUrl"
       }
     },
     computed: {

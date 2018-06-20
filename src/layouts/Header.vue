@@ -36,7 +36,7 @@
             <!-- If authenticated -->
             <template v-if="authenticated">
               <div class="user-menu">
-                <div v-if="user" class="user-name"><span><img :src="user.imgUrl" alt=""></span>{{ user.username }}</div>
+                <div v-if="user" class="user-name"><span><img :src="user.photoUrl || 'http://via.placeholder.com/500x500'" alt=""></span>{{ user.username }}</div>
                 <ul>
                   <li><router-link :to="{ name: 'profileInfo' }" exact><i class="sl sl-icon-user"></i> Perfil</router-link></li>
                   <li><a href="dashboard-messages.html"><i class="sl sl-icon-envelope-open"></i> Messages</a></li>
