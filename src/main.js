@@ -15,10 +15,6 @@ const Router = new VueRouter({
 
 let app
 
-function checkIfUsersExistsInNode() {
-
-}
-
 function loadAuthUserInfo (uid) {
   return new Promise(resolve => {
     if (!uid) resolve()
@@ -26,16 +22,7 @@ function loadAuthUserInfo (uid) {
     var authUserCallback
 
     const refs = ["/users/chefs/", "/users/users/", "/users/admins/"]
-    // refs.forEach(ref => {
-    //   authUserCallback = DB.ref(ref + uid).child("profileInfo").once("value", snapshot => {
-    //     if (snapshot.exists()) {
-    //       Store.state.user = snapshot.val()
-    //       console.log(snapshot.ref.toString())
-    //       return resolve(snapshot.ref.path)
-    //     }
-    //     console.log(ref)
-    //   })
-    // })
+    
     for (let i in refs) {
       DB.ref(refs[i] + uid).child("profileInfo").once("value", snapshot => {
         if (snapshot.exists()) {
@@ -54,13 +41,13 @@ AUTH.onAuthStateChanged(user => {
 
   loadAuthUserInfo(userId).then((x) => {
 
-    let authUserRef = ""
-
-    x.forEach(c => authUserRef += "/" + c)
-
-    DB.ref(authUserRef).on("value", snapshot => {
-      Store.state.user = snapshot.val()
-    })
+    if (x) {
+      let authUserRef = ""
+      x.forEach(c => authUserRef += "/" + c)
+      DB.ref(authUserRef).on("value", snapshot => {
+        Store.state.user = snapshot.val()
+      })
+    }
     
     if (!app) {
       new Vue({
