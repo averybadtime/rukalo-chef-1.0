@@ -47,23 +47,23 @@
     <!-- Change Password -->
     <div class="col-lg-6 col-md-12">
       <div class="dashboard-list-box margin-top-0">
-        <h4 class="gray">Change Password</h4>
+        <h4 class="gray">Cambiar contraseña</h4>
         <div class="dashboard-list-box-static">
+          <form @submit.prevent="changeUserPassword">
+            <!-- Change Password -->
+            <div class="my-profile">
+              <label>Antigua contraseña</label>
+              <input type="password" v-model="password.old">
 
-          <!-- Change Password -->
-          <div class="my-profile">
-            <label class="margin-top-0">Current Password</label>
-            <input type="password">
+              <label>Nueva contraseña</label>
+              <input type="password" v-model="password.new">
 
-            <label>New Password</label>
-            <input type="password">
-
-            <label>Confirm New Password</label>
-            <input type="password">
-
-            <button class="button margin-top-15">Change Password</button>
-          </div>
-
+              <label>Confirmación nueva contraseña</label>
+              <input type="password" v-model="password.confirmNew">
+              
+              <button type="submit" class="button margin-top-15">Cambiar contraseña</button>
+            </div>
+          </form>
         </div>
       </div>
     </div>
@@ -71,20 +71,28 @@
 </template>
 
 <script>
-  import { DB } from "@/firebase"
+  import firebase from "firebase"
+  import { DB, AUTH } from "@/firebase"
   import { Store } from "@/store"
+  import hasEmptyFields from "@/mixins/hasEmptyFields"
   import FileUploader from "@/widgets/FileUploader.vue"
   export default {
     components: {
       FileUploader
     },
+    mixins: [hasEmptyFields],
     created() {
       this.setUserProfile()
     },
     data() {
       return {
         userProfile: {},
-        reference: "/users/users/" + Store.state.firebaseUser.uid + "/profileInfo/photoUrl"
+        reference: "/users/users/" + Store.state.firebaseUser.uid + "/profileInfo/photoUrl",
+        password: {
+          old: "",
+          new: "",
+          confirmNew: ""
+        }
       }
     },
     computed: {
@@ -113,6 +121,32 @@
             this.userProfile = snapshot.val()
           }).then(() => console.info("Información actualizada."))
         })
+      },
+      changeUserPassword() {
+        if (this.hasEmptyFields(this.password)) {
+          const message = "No has rellenado todos los campos."
+          console.error(message)
+          alert(message)
+          return
+        }
+        if (this.password.new !== this.password.confirmNew) {
+          const message = "Las contraseñas no coinciden. Inténtalo de nuevo."
+          console.error(message)
+          alert(message)
+        } else {
+          const user = AUTH.currentUser
+          let credential = firebase.auth.EmailAuthProvider.credential(this.user.email, this.password.old)
+
+          user.reauthenticateWithCredential(credential).then(() => {
+            AUTH.currentUser.updatePassword(this.password.new)
+            .then(() => {
+              this.password.old = ""
+              this.password.new = ""
+              this.password.confirmNew = ""
+              console.log("Contraseña cambiada con éxito.")
+            })
+          }).catch(err => console.error(err))
+        }
       }
     }
   }
