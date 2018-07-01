@@ -92,9 +92,18 @@
 			}
 		},
 		methods: {
+			isUser(email) {
+				return new Promise(resolve => {
+					const userRef = DB.ref("/users/users/")
+					userRef.orderByChild("profileInfo/email").equalTo(email).once("value", snapshot => {
+						return resolve(snapshot.exists())
+					})
+				})
+			},
 			usernameExists(username) {
 				return new Promise(resolve => {
-					DB.ref("/registeredUsernames/" + username).once("value")
+					const registeredUsernamesRef = DB.ref("/registeredUsernames/" + username)
+					registeredUsernamesRef.once("value")
 					.then(snapshot => resolve(snapshot.exists()))
 				})
 			},
@@ -105,13 +114,17 @@
 					alert(message)
 					return
 				}
-
-				AUTH.signInWithEmailAndPassword(this.l.email, this.l.password)
-				.then(() => {
-					console.log("logueado")
-				}).catch((err) => {
-					console.error(err)
-					alert(err.message)
+				const email = this.l.email
+				const password = this.l.password
+				this.isUser(email).then(isUser => {
+					if (isUser) {
+						AUTH.signInWithEmailAndPassword(email, password).then(() => console.log("logueado"))
+						.catch(err => console.error(err))
+					} else {
+						const message = "Este usuario no se encuentra registrado."
+						console.error(message)
+						alert(message)
+					}
 				})
 			},
 			register() {
@@ -131,32 +144,28 @@
 				}
 
 				const username = this.r.username
+				const email = this.r.email
+				const password = this.r.password
+				const confirmPassword = this.r.confirmPassword
 				
-				this.usernameExists(username)
-				.then((exists) => {
-					if (exists) {
+				this.usernameExists(username).then(usernameExists => {
+					if (usernameExists) {
 						const message = "El nombre de usuario no se encuentra disponible."
 						console.error(message)
 						alert(message)
 					} else {
-						AUTH.createUserWithEmailAndPassword(this.r.email, this.r.password)
-						.then((resp) => {
+						AUTH.createUserWithEmailAndPassword(this.r.email, this.r.password).then(resp => {
 							const uid = resp.user.uid
-							DB.ref("/users/users/" + uid + "/profileInfo").update({
-								username: username,
-								email: this.r.email
+							let updatedInfo = {}
+							updatedInfo["/users/users/" + uid + "/profileInfo"] = { username, email, role: "USER" }
+							updatedInfo["/registeredUsernames/" + username] = true
+							DB.ref().update(updatedInfo, err => {
+								if (err) console.error("Error guardando al usuario en la base de datos: " + err)
+								else alert("Usuario creado con éxito.")
 							})
-							.then(() => {
-								DB.ref("/registeredUsernames").child(username).set(true)
-								.then(() => alert("Registrado con éxito."))
-							})
-							.catch(err => {
-								console.error(err)
-								alert(err)
-							})
-						})
+						}).catch(err => console.error(err))
 					}
-				}).catch(err => console.error(err))
+				}).catch(err => console.error("Error en la validación de existencia del usuario."))
 			}
 		}
 	}

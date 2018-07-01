@@ -13,42 +13,34 @@ const Router = new VueRouter({
 	routes: Routes
 })
 
-let app
+let app, onValue
 
 function loadAuthUserInfo (uid) {
   return new Promise(resolve => {
-    if (!uid) resolve()
+    if (!uid) return resolve()
 
-    var authUserCallback
-
-    const refs = ["/users/chefs/", "/users/users/", "/users/admins/"]
-    
-    for (let i in refs) {
-      DB.ref(refs[i] + uid).child("profileInfo").once("value", snapshot => {
-        if (snapshot.exists()) {
-          Store.state.user = snapshot.val()
-          return resolve(snapshot.ref.path.pieces_)
-        }
-      })
-    }
+    const userRef = DB.ref("/users/users/" + uid)
+    onValue = userRef.child("profileInfo").on("value", snapshot => {
+      if (snapshot.exists()) return resolve(snapshot.val())
+      else return resolve(null)
+    })
   })
 }
 
 AUTH.onAuthStateChanged(user => {
-  Store.state.firebaseUser = user
-
-  const userId = user ? user.uid : null
-
-  loadAuthUserInfo(userId).then((x) => {
-
-    if (x) {
-      let authUserRef = ""
-      x.forEach(c => authUserRef += "/" + c)
-      DB.ref(authUserRef).on("value", snapshot => {
-        Store.state.user = snapshot.val()
-      })
+  const uid = user ? user.uid : null
+  loadAuthUserInfo(uid).then(data => {
+    if (data) {
+      if (data.role === "USER") {
+        Store.state.firebaseUser = user
+        Store.state.user = data
+      } else {
+        AUTH.signOut().then(() => console.log("Cerrando sesión..."))
+        DB.ref("/users/users/" + uid + "/profileInfo").off("value", onValue)
+      }
+    } else {
+      if (uid) DB.ref("/users/users/" + uid + "/profileInfo").off("value", onValue)
     }
-    
     if (!app) {
       new Vue({
         el: '#app',
@@ -58,5 +50,4 @@ AUTH.onAuthStateChanged(user => {
       })
     }
   })
-
 })
